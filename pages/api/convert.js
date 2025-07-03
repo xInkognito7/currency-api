@@ -14,15 +14,27 @@ export default async function handler(req) {
     const response = await fetch(url);
     const data = await response.json();
 
-    // Antwort komplett zurückgeben (für Debug-Zwecke)
-    return new Response(
-      JSON.stringify({ success: !!data.result, raw: data }, null, 2),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
+    if (!data.result) {
+      // Rückgabe der vollständigen API-Antwort bei fehlendem Ergebnis
+      return new Response(
+        JSON.stringify({
+          error: 'Kein gültiges Ergebnis von der API erhalten.',
+          rawResponse: data,
+          usedUrl: url
+        }, null, 2),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const converted = data.result.toFixed(2);
+    return new Response(`${amount} ${from} = ${converted} ${to}`, {
+      status: 200,
+      headers: { 'Content-Type': 'text/plain' }
+    });
   } catch (error) {
-    return new Response(
-      JSON.stringify({ error: error.message }, null, 2),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    return new Response(`Fehler: ${error.message}`, {
+      status: 500,
+      headers: { 'Content-Type': 'text/plain' }
+    });
   }
 }
