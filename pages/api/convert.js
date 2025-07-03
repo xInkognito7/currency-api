@@ -12,9 +12,8 @@ export default async function handler(req, res) {
     const rate = data.info.rate.toFixed(4);
 
     res.setHeader('Content-Type', 'text/plain');
-    res.status(200).send(`${amount} ${from} = ${result} ${to} (Kurs: ${rate})`);
+    res.status(200).send(`💱 ${amount} ${from} = ${result} ${to} (Kurs: ${rate})`);
   } catch (err) {
     res.status(500).send(`Fehler: ${err.message}`);
   }
 }
-
