@@ -1,24 +1,28 @@
-export default async function handler(req, res) {
-  const from = (req.query.from || 'BRL').toUpperCase();
+export const config = {
+  runtime: 'edge',
+};
+
+export default async function handler(req) {
+  const { searchParams } = new URL(req.url);
+
+  const from = (searchParams.get('from') || 'BRL').toUpperCase();
   const to = from === 'BRL' ? 'EUR' : 'BRL';
-  const amount = parseFloat(req.query.amount) || 1;
+  const amount = parseFloat(searchParams.get('amount') || '1');
 
   try {
     const url = `https://api.exchangerate.host/convert?from=${from}&to=${to}&amount=${amount}`;
     const response = await fetch(url);
     const data = await response.json();
 
-    // Debug-Ausgabe:
-    console.log("API Response:", data);
-
-    if (!data.result) {
-      return res.status(500).send(`Fehler: Kein Ergebnis von der API erhalten.\n\nRaw API Response:\n${JSON.stringify(data, null, 2)}`);
-    }
-
-    const result = Number(data.result).toFixed(2);
-    res.setHeader('Content-Type', 'text/plain');
-    res.status(200).send(`💱 ${amount} ${from} = ${result} ${to}`);
+    // Antwort komplett zurückgeben (für Debug-Zwecke)
+    return new Response(
+      JSON.stringify({ success: !!data.result, raw: data }, null, 2),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
+    );
   } catch (error) {
-    res.status(500).send(`Fehler: ${error.message}`);
+    return new Response(
+      JSON.stringify({ error: error.message }, null, 2),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 }
