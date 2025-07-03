@@ -8,8 +8,13 @@ export default async function handler(req, res) {
     if (!r.ok) throw new Error(`API-Fehler: ${r.status}`);
     const data = await r.json();
 
-    const result = data.result.toFixed(2);
-    const rate = data.info.rate.toFixed(4);
+    if (!data.result || !data.info || !data.info.rate) {
+      console.error("Ungültige API-Antwort:", data);
+      return res.status(500).send("Fehler: Ungültige Antwort von der API.");
+    }
+
+    const result = Number(data.result).toFixed(2);
+    const rate = Number(data.info.rate).toFixed(4);
 
     res.setHeader('Content-Type', 'text/plain');
     res.status(200).send(`💱 ${amount} ${from} = ${result} ${to} (Kurs: ${rate})`);
